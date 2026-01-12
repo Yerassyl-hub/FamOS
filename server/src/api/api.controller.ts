@@ -25,6 +25,11 @@ export class ApiController {
     return { status: 'ok', timestamp: new Date().toISOString() };
   }
 
+  @Get('status')
+  status() {
+    return { status: 'ok', timestamp: new Date().toISOString() };
+  }
+
   @Post('analyze-style')
   async analyzeStyle(@Body() body: { userId?: string }) {
     const userId = body?.userId || 'default';
