@@ -30,8 +30,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      message: typeof message === 'string' ? message : (message as any).message || message,
+      message: typeof message === 'string' 
+        ? message 
+        : (message as any).message || JSON.stringify(message),
+      ...(process.env.NODE_ENV !== 'production' && {
+        stack: exception instanceof Error ? exception.stack : undefined,
+      }),
     };
+
+    // Логирование ошибок
+    if (status >= 500) {
+      console.error('Server Error:', {
+        status,
+        path: request.url,
+        method: request.method,
+        error: exception instanceof Error ? exception.message : String(exception),
+        stack: exception instanceof Error ? exception.stack : undefined,
+      });
+    }
 
     response.status(status).json(errorResponse);
   }
