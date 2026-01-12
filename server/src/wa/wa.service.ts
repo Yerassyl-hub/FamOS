@@ -212,8 +212,8 @@ export class WaService implements OnModuleInit {
     return {
       status: this.connectionStatus,
       isConnected: this.connectionStatus === 'ready' || this.connectionStatus === 'authenticated',
-      qrCode: this.qrCode,
-      lastError: this.lastError,
+      qrCode: this.qrCode || null,
+      lastError: this.lastError || null,
       isConnecting: this.isConnecting,
     };
   }

@@ -45,6 +45,43 @@ app/
 
 ## Функциональные требования
 
+### 0. WhatsApp Connection Status (в Dashboard)
+
+**Компонент:**
+- **WhatsApp Status Card**:
+  - Статус подключения (ready/connecting/disconnected)
+  - Индикатор подключения (зеленый/желтый/красный)
+  - QR код (если статус = connecting)
+  - Кнопки: "Переподключить", "Отключить"
+  - Последняя ошибка (если есть)
+
+**API:**
+- `GET /api/whatsapp/status` - получить статус
+- `POST /api/whatsapp/reconnect` - переподключить
+- `POST /api/whatsapp/disconnect` - отключить
+
+**Пример компонента:**
+```tsx
+function WhatsAppStatus() {
+  const { data: status, refetch } = useQuery({
+    queryKey: ['whatsapp-status'],
+    queryFn: () => api.getWhatsAppStatus(),
+    refetchInterval: 5000, // обновлять каждые 5 секунд
+  });
+
+  if (status?.status === 'connecting' && status.qrCode) {
+    return <QRCodeDisplay qr={status.qrCode} />;
+  }
+
+  return (
+    <div>
+      <StatusIndicator status={status?.status} />
+      <button onClick={() => api.reconnectWhatsApp()}>Переподключить</button>
+    </div>
+  );
+}
+```
+
 ### 1. Dashboard (Главная страница - `/`)
 
 **Компоненты:**
@@ -221,6 +258,20 @@ app/
 
 ## Технические детали реализации
 
+## Новые API Endpoints для WhatsApp
+
+### WhatsApp Status
+- `GET /api/whatsapp/status` - Получить статус подключения WhatsApp
+  - Возвращает: `{ status, isConnected, qrCode, lastError, isConnecting }`
+  
+- `POST /api/whatsapp/reconnect` - Переподключить WhatsApp
+  
+- `POST /api/whatsapp/disconnect` - Отключить WhatsApp
+
+### Статус сервера
+- `GET /api/status` - Статус сервера (исправлен 404)
+- `GET /api/health` - Проверка здоровья
+
 ### API Client (lib/api/client.ts)
 
 ```typescript
@@ -251,6 +302,7 @@ export interface StatsResponse {
 // API методы
 export const api = {
   health: () => apiClient.get<HealthResponse>('/health'),
+  status: () => apiClient.get<HealthResponse>('/status'),
   stats: () => apiClient.get<StatsResponse>('/stats'),
   syncChats: () => apiClient.post('/sync-chats'),
   analyzeStyle: (userId?: string) => 
@@ -266,6 +318,10 @@ export const api = {
   getChats: () => apiClient.get('/chats'),
   getChatMessages: (chatId: string, limit?: number, skip?: number) =>
     apiClient.get(`/chats/${chatId}/messages?limit=${limit || 50}&skip=${skip || 0}`),
+  // WhatsApp endpoints
+  getWhatsAppStatus: () => apiClient.get('/whatsapp/status'),
+  reconnectWhatsApp: () => apiClient.post('/whatsapp/reconnect'),
+  disconnectWhatsApp: () => apiClient.post('/whatsapp/disconnect'),
 };
 ```
 

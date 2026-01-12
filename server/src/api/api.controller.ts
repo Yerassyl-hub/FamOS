@@ -181,4 +181,53 @@ export class ApiController {
       );
     }
   }
+
+  @Post('whatsapp/generate-qr')
+  async generateQR() {
+    try {
+      // Если уже подключен, возвращаем текущий статус
+      const status = this.waService.getConnectionStatus();
+      
+      if (status.status === 'ready' || status.status === 'authenticated') {
+        return {
+          success: false,
+          message: 'WhatsApp already connected',
+          isConnected: true,
+        };
+      }
+
+      // Если есть QR код, возвращаем его
+      if (status.qrCode) {
+        return {
+          success: true,
+          qrCode: status.qrCode,
+        };
+      }
+
+      // Инициируем переподключение для генерации QR
+      await this.waService.reconnect();
+      
+      // Ждем немного для генерации QR
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const newStatus = this.waService.getConnectionStatus();
+      
+      return {
+        success: true,
+        qrCode: newStatus.qrCode || null,
+        message: newStatus.qrCode 
+          ? 'QR code generated' 
+          : 'QR code will be available shortly. Check status endpoint.',
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Failed to generate QR code',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
 }
