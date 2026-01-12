@@ -2,7 +2,7 @@
   "name": "famos-server",
   "version": "1.0.0",
   "description": "FamOS Backend Server",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
