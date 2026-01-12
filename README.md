@@ -2,6 +2,10 @@
 
 Полноценное приложение для автоматизации WhatsApp с AI-ассистентом, который изучает ваш стиль общения и может отвечать вместо вас.
 
+[![Contributors](https://img.shields.io/github/contributors/Yerassyl-hub/FamOS)](https://github.com/Yerassyl-hub/FamOS/graphs/contributors)
+[![Issues](https://img.shields.io/github/issues/Yerassyl-hub/FamOS)](https://github.com/Yerassyl-hub/FamOS/issues)
+[![License](https://img.shields.io/github/license/Yerassyl-hub/FamOS)](LICENSE)
+
 ## Возможности
 
 ✅ **Синхронизация всех чатов** - автоматическая загрузка всех текущих и старых чатов  
@@ -168,6 +172,21 @@ npm run build
 npm run start:prod
 ```
 
+## Участие в разработке
+
+Мы приветствуем вклад в проект! Пожалуйста, прочитайте [CONTRIBUTING.md](./CONTRIBUTING.md) для получения информации о процессе разработки.
+
+### Команда
+
+- Создавайте Issues для багов и предложений
+- Делайте Fork и создавайте Pull Requests
+- Следуйте стандартам кодирования проекта
+
 ## Лицензия
 
 UNLICENSED
+
+## Контакты
+
+- GitHub: [Yerassyl-hub/FamOS](https://github.com/Yerassyl-hub/FamOS)
+- Issues: [Создать Issue](https://github.com/Yerassyl-hub/FamOS/issues/new)
