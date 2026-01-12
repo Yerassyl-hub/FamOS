@@ -2,6 +2,7 @@ services:
   - type: web
     name: famos-backend
     env: node
+    region: frankfurt
     plan: free
     buildCommand: npm install && npm run build
     startCommand: npm run start:prod
@@ -11,10 +12,20 @@ services:
       - key: PORT
         value: 10000
       - key: MONGODB_URI
-        sync: false
+        sync: false  # Установите вручную в Render dashboard
       - key: REDIS_HOST
-        sync: false
+        sync: false  # Установите вручную в Render dashboard
       - key: REDIS_PORT
         value: 6379
       - key: FRONTEND_URL
-        sync: false
+        value: *  # Или укажите URL вашего фронтенда
+
+  - type: redis
+    name: famos-redis
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+
+  - type: mongodb
+    name: famos-mongo
+    plan: free
+    databaseName: famos

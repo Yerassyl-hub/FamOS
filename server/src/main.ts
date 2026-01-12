@@ -56,7 +56,7 @@ async function bootstrap() {
   // app.setGlobalPrefix('api'); // НЕ используем, т.к. контроллеры уже имеют @Controller('api')
   
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0'); // Listen on all interfaces for Render
   
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`API available at: http://localhost:${port}/api`);
