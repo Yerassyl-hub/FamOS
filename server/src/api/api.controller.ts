@@ -1,10 +1,12 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, HttpException, HttpStatus } from '@nestjs/common';
 import { UserStyleService } from '../user-style/user-style.service';
 import { DailyReportService } from '../daily-report/daily-report.service';
 import { AiResponseService } from '../ai-response/ai-response.service';
 import { ChatSyncService } from '../chat-sync/chat-sync.service';
 import { MessageService } from '../message/message.service';
 import { ChatService } from '../chat/chat.service';
+import { WaService } from '../wa/wa.service';
+import { ToggleAutoReplyDto } from './dto/auto-reply.dto';
 
 @Controller('api')
 export class ApiController {
@@ -15,6 +17,7 @@ export class ApiController {
     private readonly chatSyncService: ChatSyncService,
     private readonly messageService: MessageService,
     private readonly chatService: ChatService,
+    private readonly waService: WaService,
   ) {}
 
   @Get('health')
@@ -49,18 +52,33 @@ export class ApiController {
   }
 
   @Post('auto-reply')
-  async toggleAutoReply(@Body() body: { enabled: boolean }) {
-    this.aiResponseService.setAutoReply(body.enabled);
-    return {
-      success: true,
-      autoReplyEnabled: this.aiResponseService.isAutoReplyEnabled(),
-    };
+  async toggleAutoReply(@Body() dto: ToggleAutoReplyDto) {
+    try {
+      this.aiResponseService.setAutoReply(dto.enabled);
+      return {
+        success: true,
+        autoReplyEnabled: this.aiResponseService.isAutoReplyEnabled(),
+        message: dto.enabled 
+          ? 'Auto-reply enabled successfully' 
+          : 'Auto-reply disabled successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Failed to toggle auto-reply',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get('auto-reply')
   getAutoReplyStatus() {
     return {
       autoReplyEnabled: this.aiResponseService.isAutoReplyEnabled(),
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -112,5 +130,50 @@ export class ApiController {
       parseInt(skip, 10),
     );
     return { messages };
+  }
+
+  @Get('whatsapp/status')
+  getWhatsAppStatus() {
+    return this.waService.getConnectionStatus();
+  }
+
+  @Post('whatsapp/reconnect')
+  async reconnectWhatsApp() {
+    try {
+      await this.waService.reconnect();
+      return {
+        success: true,
+        message: 'WhatsApp reconnection initiated',
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Failed to reconnect WhatsApp',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post('whatsapp/disconnect')
+  async disconnectWhatsApp() {
+    try {
+      await this.waService.disconnect();
+      return {
+        success: true,
+        message: 'WhatsApp disconnected successfully',
+      };
+    } catch (error) {
+      throw new HttpException(
+        {
+          success: false,
+          message: 'Failed to disconnect WhatsApp',
+          error: error.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

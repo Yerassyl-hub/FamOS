@@ -12,6 +12,9 @@ export class WaService implements OnModuleInit {
   private logFile: string;
   private client: Client | null = null;
   private isConnecting = false;
+  private connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'authenticated' | 'ready' = 'disconnected';
+  private qrCode: string | null = null;
+  private lastError: string | null = null;
 
   constructor(
     @InjectQueue('message-processing')
@@ -101,6 +104,9 @@ export class WaService implements OnModuleInit {
 
       // Ready event
       this.client.on('ready', () => {
+        this.connectionStatus = 'ready';
+        this.qrCode = null; // Clear QR code after successful connection
+        this.lastError = null;
         const readyMsg = '✅ WhatsApp client is ready!';
         this.logger.log(readyMsg);
         this.writeLog('LOG', readyMsg);
@@ -109,6 +115,7 @@ export class WaService implements OnModuleInit {
 
       // Authenticated event
       this.client.on('authenticated', () => {
+        this.connectionStatus = 'authenticated';
         const authMsg = 'WhatsApp authenticated successfully';
         this.logger.log(authMsg);
         this.writeLog('LOG', authMsg);
@@ -116,6 +123,8 @@ export class WaService implements OnModuleInit {
 
       // Authentication failure
       this.client.on('auth_failure', (msg) => {
+        this.connectionStatus = 'disconnected';
+        this.lastError = `Authentication failed: ${msg}`;
         const errorMsg = `Authentication failed: ${msg}`;
         this.logger.error(errorMsg);
         this.writeLog('ERROR', errorMsg);
@@ -124,6 +133,8 @@ export class WaService implements OnModuleInit {
 
       // Disconnected event
       this.client.on('disconnected', (reason) => {
+        this.connectionStatus = 'disconnected';
+        this.lastError = `Disconnected: ${reason}`;
         const disconnectMsg = `WhatsApp disconnected: ${reason}`;
         this.logger.warn(disconnectMsg);
         this.writeLog('WARN', disconnectMsg);
@@ -197,12 +208,34 @@ export class WaService implements OnModuleInit {
     return this.client;
   }
 
+  getConnectionStatus() {
+    return {
+      status: this.connectionStatus,
+      isConnected: this.connectionStatus === 'ready' || this.connectionStatus === 'authenticated',
+      qrCode: this.qrCode,
+      lastError: this.lastError,
+      isConnecting: this.isConnecting,
+    };
+  }
+
+  async reconnect(): Promise<void> {
+    if (this.isConnecting) {
+      throw new Error('Connection attempt already in progress');
+    }
+    await this.disconnect();
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await this.connectToWhatsApp();
+  }
+
   async disconnect(): Promise<void> {
     if (this.client) {
       await this.client.destroy();
       this.client = null;
     }
     this.isConnecting = false;
+    this.connectionStatus = 'disconnected';
+    this.qrCode = null;
     this.logger.log('WhatsApp connection closed');
+    this.writeLog('LOG', 'WhatsApp connection closed');
   }
 }

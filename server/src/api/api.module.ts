@@ -6,6 +6,7 @@ import { AiResponseModule } from '../ai-response/ai-response.module';
 import { ChatSyncModule } from '../chat-sync/chat-sync.module';
 import { MessageModule } from '../message/message.module';
 import { ChatModule } from '../chat/chat.module';
+import { WaModule } from '../wa/wa.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ChatModule } from '../chat/chat.module';
     ChatSyncModule,
     MessageModule,
     ChatModule,
+    WaModule,
   ],
   controllers: [ApiController],
 })
