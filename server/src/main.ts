@@ -51,7 +51,9 @@ async function bootstrap() {
     }),
   );
   
-  // Note: API prefix is already set in controllers (@Controller('api'))
+  // Global API prefix (controllers already use @Controller('api'), but this ensures consistency)
+  // Note: This will create /api/api if controller also has 'api', so we rely on @Controller('api')
+  // app.setGlobalPrefix('api'); // НЕ используем, т.к. контроллеры уже имеют @Controller('api')
   
   const port = process.env.PORT || 3000;
   await app.listen(port);
@@ -59,6 +61,19 @@ async function bootstrap() {
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`API available at: http://localhost:${port}/api`);
   logger.log('CORS enabled for frontend integration');
+  logger.log('Available endpoints:');
+  logger.log('  GET  /api/health');
+  logger.log('  GET  /api/status');
+  logger.log('  GET  /api/stats');
+  logger.log('  GET  /api/whatsapp/status');
+  logger.log('  POST /api/whatsapp/generate-qr');
+  logger.log('  POST /api/whatsapp/disconnect');
+  logger.log('  GET  /api/auto-reply');
+  logger.log('  POST /api/auto-reply');
+  logger.log('  GET  /api/chats');
+  logger.log('  GET  /api/chats/:chatId/messages');
+  logger.log('  GET  /api/reports');
+  logger.log('  GET  /api/reports/:date');
   logger.log('WhatsApp Producer is initializing...');
 }
 
