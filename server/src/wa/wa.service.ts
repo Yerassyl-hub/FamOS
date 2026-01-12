@@ -12,7 +12,7 @@ export class WaService implements OnModuleInit {
   private logFile: string;
   private client: Client | null = null;
   private isConnecting = false;
-  private connectionStatus: 'disconnected' | 'connecting' | 'connected' | 'authenticated' | 'ready' = 'disconnected';
+  private connectionStatus: 'disconnected' | 'connecting' | 'authenticated' | 'ready' | 'qr_code' = 'disconnected';
   private qrCode: string | null = null;
   private lastError: string | null = null;
 
@@ -72,6 +72,10 @@ export class WaService implements OnModuleInit {
 
       // QR Code event
       this.client.on('qr', (qr) => {
+        // Сохраняем QR код в base64 формате для API
+        this.qrCode = qr;
+        this.connectionStatus = 'qr_code';
+        
         const qrMsg1 = '═══════════════════════════════════════';
         const qrMsg2 = 'QR Code generated. Please scan with WhatsApp.';
         const qrMsg3 = 'Waiting for QR code scan...';

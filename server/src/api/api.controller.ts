@@ -382,16 +382,34 @@ export class ApiController {
         return {
           success: true,
           qrCode: status.qrCode,
+          message: 'QR code available',
         };
+      }
+
+      // Если уже идет подключение, ждем QR код
+      if (status.isConnecting || status.status === 'connecting') {
+        // Ждем до 30 секунд для генерации QR
+        for (let i = 0; i < 30; i++) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          const newStatus = this.waService.getConnectionStatus();
+          if (newStatus.qrCode) {
+            return {
+              success: true,
+              qrCode: newStatus.qrCode,
+              message: 'QR code generated',
+            };
+          }
+        }
+        throw new Error('QR code generation timeout');
       }
 
       // Инициируем переподключение для генерации QR
       await this.waService.reconnect();
       
-      // Ждем немного для генерации QR
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const newStatus = this.waService.getConnectionStatus();
+      // Ждем до 30 секунд для генерации QR
+      for (let i = 0; i < 30; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        const newStatus = this.waService.getConnectionStatus();
       
       return {
         success: true,
